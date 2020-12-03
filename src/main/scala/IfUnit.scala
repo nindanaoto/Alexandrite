@@ -31,7 +31,7 @@ class IfUnit(implicit val conf: Config) extends Module {
   val pc = RegInit(0.U(conf.instAddrWidth.W))
 
   val stole = Wire(Bool())
-  val inst = Wire(UInt(24.W))
+  val inst = Wire(UInt(conf.instWidth.W))
   inst := DontCare
 
 

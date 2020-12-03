@@ -2,9 +2,7 @@ import chisel3._
 import chisel3.util.Cat
 
 class WbUnitPort(implicit val conf:Config) extends Bundle {
-  val regWrite = new MainRegInWrite()
-  val inst = UInt(conf.instWidth.W)
-  val instAddr = UInt(conf.instAddrWidth.W)
+  val regfilewrite = new RegFileWrite
   val finishFlag = Bool()
 
   override def cloneType: this.type = new WbUnitPort()(conf).asInstanceOf[this.type]
@@ -61,15 +59,11 @@ class IdWbUnit(implicit val conf:Config) extends Module {
   io.memOut := decoder.io.memOut
   io.memOut.data := fwd2.io.out
 
-  io.wbOut.regWrite.rd := decoder.io.rd
-  io.wbOut.inst := pIdReg.inst
-  io.wbOut.instAddr := pIdReg.instAddr
+  io.wbOut.regfilewrite.waddr := decoder.io.rd
   io.mainRegOut := mainReg.io.regOut
 
   mainReg.io.port.inRead := decoder.io.regRead
   mainReg.io.port.inWrite := io.wbIn.regWrite
-  mainReg.io.inst := io.wbIn.inst
-  mainReg.io.instAddr := io.wbIn.instAddr
 
   fwd1.io.rs := decoder.io.regRead.rs1
   fwd1.io.data := mainReg.io.port.out.rs1Data

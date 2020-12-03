@@ -16,19 +16,13 @@ class ExUnitPort(implicit val conf:Config) extends Bundle {
 class ExUnitIn(implicit val conf:Config) extends Bundle {
   val aluIn = new ALUPortIn
 
-  val bcIn = new BranchControllerIn()
-}
-
-class BranchControllerIn(implicit val conf:Config) extends Bundle {
-  val pcOpcode = UInt(3.W)
-  val pc = UInt(16.W)
-  val pcImm = UInt(16.W)
-  val pcAdd = Bool()
+  val bcIn = new BrCondIO()
+  
+  override def cloneType: this.type = new ExUnitIn()(conf).asInstanceOf[this.type]
 }
 
 class ExUnitOut(implicit val conf:Config) extends Bundle {
   val res = Output(UInt(conf.dataWidth.W))
-  val jumpAddress = Output(UInt(conf.instAddrWidth.W))
   val jump = Output(Bool())
 
   override def cloneType: this.type = new ExUnitOut()(conf).asInstanceOf[this.type]
@@ -37,7 +31,9 @@ class ExUnitOut(implicit val conf:Config) extends Bundle {
 class ExUnit(implicit val conf:Config) extends Module {
   val io = IO(new ExUnitPort)
   val alu = Module(new ALU)
+  val brcond = Module(new brcond)
   val pExReg = RegInit(0.U.asTypeOf(new ExUnitIn))
+  val pBrReg = RegInit(0.U.asTypeOf(new BrCondIn))
   val pMemReg = RegInit(0.U.asTypeOf(new MemUnitIn))
   val pWbReg = RegInit(0.U.asTypeOf(new WbUnitIn))
 
@@ -62,33 +58,8 @@ class ExUnit(implicit val conf:Config) extends Module {
   io.wbOut := pWbReg
   io.wbOut.regWrite.writeData := io.out.res
 
-  when(pExReg.bcIn.pcAdd) {
-    io.out.jumpAddress := pExReg.bcIn.pc + pExReg.bcIn.pcImm
-  }.otherwise{
-    io.out.jumpAddress := pExReg.bcIn.pcImm
-  }
-
-  val flagCarry = alu.io.out.flagCarry
-  val flagOverflow = alu.io.out.flagOverflow
-  val flagSign = alu.io.out.flagSign
-  val flagZero = alu.io.out.flagZero
-
-  io.out.jump := false.B
-  when(pExReg.bcIn.pcOpcode === 1.U){
-    io.out.jump := flagZero
-  }.elsewhen(pExReg.bcIn.pcOpcode === 2.U){
-    io.out.jump := flagCarry
-  }.elsewhen(pExReg.bcIn.pcOpcode === 3.U){
-    io.out.jump := flagCarry||flagZero
-  }.elsewhen(pExReg.bcIn.pcOpcode === 4.U){
-    io.out.jump := true.B
-  }.elsewhen(pExReg.bcIn.pcOpcode === 5.U){
-    io.out.jump := !flagZero
-  }.elsewhen(pExReg.bcIn.pcOpcode === 6.U){
-    io.out.jump := flagSign != flagOverflow
-  }.elsewhen(pExReg.bcIn.pcOpcode === 7.U){
-    io.out.jump := (flagSign != flagOverflow)||flagZero
-  }
+  brcond.io.in := pBrReg
+  io.out.jump := brcond.io.jump
 
   when(conf.debugEx.B) {
     printf("[EX] opcode:0x%x\n", pExReg.aluIn.opcode)
