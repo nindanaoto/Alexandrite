@@ -11,15 +11,15 @@ class WbUnitPort(implicit val conf:Config) extends Bundle {
 class IdWbUnitPort(implicit val conf:Config) extends Bundle {
   val idIn = Input(new IfUnitOut)
   val wbIn = Input(new WbUnitPort)
-  val exRegWriteIn = Input(new MainRegInWrite)
-  val memRegWriteIn = Input(new MainRegInWrite)
+  val exWbIn = Input(new WbUnitPort)
+  val memWbIn = Input(new WbUnitPort)
   val exMemIn = Input(new MemUnitIn)
 
   val exOut = Output(new ExUnitIn)
   val memOut = Output(new MemUnitIn)
   val wbOut = Output(new WbUnitPort)
 
-  val mainRegOut = Output(new MainRegisterOutPort)
+  val mainRegOut = Output(new RegisterFileOutPort)
 
   val stole = Output(Bool())
 

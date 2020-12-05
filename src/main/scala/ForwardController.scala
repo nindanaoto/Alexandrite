@@ -4,8 +4,8 @@ class ForwardController(implicit val conf:Config) extends Module{
   val io = IO(new Bundle{
     val rs = Input(UInt(conf.regBit.W))
     val data = Input(UInt(conf.dataWidth.W))
-    val exWrite = Input(new MainRegInWrite())
-    val memWrite = Input(new MainRegInWrite())
+    val exWrite = Input(new RegFileWritee())
+    val memWrite = Input(new RegFileWrite())
     val out = Output(UInt(conf.dataWidth.W))
   })
   when(io.rs === io.exWrite.rd && io.exWrite.writeEnable) {

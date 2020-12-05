@@ -14,10 +14,10 @@ class ExUnitPort(implicit val conf:Config) extends Bundle {
 }
 
 class ExUnitIn(implicit val conf:Config) extends Bundle {
-  val aluIn = new ALUPortIn
+  val aluIn = new ALUIn
 
-  val bcIn = new BrCondIO()
-  
+  val bcIn = new BrCondIO
+
   override def cloneType: this.type = new ExUnitIn()(conf).asInstanceOf[this.type]
 }
 
@@ -36,7 +36,6 @@ class ExUnit(implicit val conf:Config) extends Module {
   val pBrReg = RegInit(0.U.asTypeOf(new BrCondIn))
   val pMemReg = RegInit(0.U.asTypeOf(new MemUnitIn))
   val pWbReg = RegInit(0.U.asTypeOf(new WbUnitIn))
-
 
   when(io.enable) {
     pExReg := io.in

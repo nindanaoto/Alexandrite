@@ -13,9 +13,9 @@ class RegFileRead(implicit val conf:Config) extends Bundle{
 
 
 class RegFileWrite(implicit val conf:Config) extends Bundle{
-  val wen    = Input(Bool())
-  val waddr  = Input(UInt(conf.regBit.W))
-  val wdata  = Input(UInt(conf.dataWidth.W))
+  val writeEnable = Input(Bool())
+  val rd          = Input(UInt(conf.regBit.W))
+  val writeData   = Input(UInt(conf.dataWidth.W))
 }
 
 class RegisterFileOutPort(implicit val conf:Config) extends Bundle{
@@ -33,8 +33,8 @@ class RegFile(implicit val conf:Config) extends Module with CoreParams {
   val regs = Mem(1<<conf.regBit, UInt(conf.dataWidth.W))
   io.rdata1 := Mux(io.raddr1.orR, regs(io.raddr1), 0.U)
   io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
-  when(io.wen & io.waddr.orR) {
-    regs(io.waddr) := io.wdata
+  when(io.wen & io.rd.orR) {
+    regs(io.rd) := io.wdata
   }
 
   io.regOut := regs
