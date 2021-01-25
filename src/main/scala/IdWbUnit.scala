@@ -1,23 +1,23 @@
 import chisel3._
 import chisel3.util.Cat
 
-class WbUnitPort(implicit val conf:Config) extends Bundle {
+class WbUnitIn(implicit val conf:Config) extends Bundle {
   val regfilewrite = new RegFileWrite
   val finishFlag = Bool()
 
-  override def cloneType: this.type = new WbUnitPort()(conf).asInstanceOf[this.type]
+  override def cloneType: this.type = new WbUnitIn()(conf).asInstanceOf[this.type]
 }
 
 class IdWbUnitPort(implicit val conf:Config) extends Bundle {
   val idIn = Input(new IfUnitOut)
-  val wbIn = Input(new WbUnitPort)
-  val exWbIn = Input(new WbUnitPort)
-  val memWbIn = Input(new WbUnitPort)
+  val wbIn = Input(new WbUnitIn)
+  val exRegWriteIn = Input(new RegFileWrite)
+  val memRegWriteIn = Input(new RegFileWrite)
   val exMemIn = Input(new MemUnitIn)
 
   val exOut = Output(new ExUnitIn)
   val memOut = Output(new MemUnitIn)
-  val wbOut = Output(new WbUnitPort)
+  val wbOut = Output(new WbUnitIn)
 
   val mainRegOut = Output(new RegisterFileOutPort)
 
@@ -45,6 +45,9 @@ class IdWbUnit(implicit val conf:Config) extends Module {
     pIdReg := pIdReg
   }
 
+  val pWbReg = RegInit(0.U.asTypeOf(WbUnitIn))
+  pWbReg := 
+
   val decoder = Module(new InstructionDecoder())
   val immgen = Module(new ImmGen())
   val fwd1 = Module(new ForwardController())
@@ -56,7 +59,8 @@ class IdWbUnit(implicit val conf:Config) extends Module {
   io.exOut := decoder.io.exOut
   io.exOut.bcIn.pc := pIdReg.instAddr
 
-  io.memOut := decoder.io.memOut
+  io.memOut.st_type := decoder.io.st_type
+  io.memOut.ld_type := decoder.io.ld_type
   io.memOut.data := fwd2.io.out
 
   io.wbOut.regfilewrite.waddr := decoder.io.rd

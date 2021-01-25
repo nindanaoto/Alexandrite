@@ -1,5 +1,5 @@
 
-case class CAHPConfig() {
+case class Config() {
     var debugIf = true
     var debugId = true
     var debugEx = true
