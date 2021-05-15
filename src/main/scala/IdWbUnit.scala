@@ -45,40 +45,38 @@ class IdWbUnit(implicit val conf:Config) extends Module {
     pIdReg := pIdReg
   }
 
-  val pWbReg = RegInit(0.U.asTypeOf(RegFileWrite))
+  val pWbReg = RegInit(0.U.asTypeOf(new RegFileWrite))
   pWbReg := io.wbIn.regfilewrite
 
   val decoder = Module(new InstructionDecoder())
   val immgen = Module(new ImmGen())
   val fwd1 = Module(new ForwardController())
   val fwd2 = Module(new ForwardController())
-  val mainReg = Module(new MainRegister())
+  val mainReg = Module(new RegFile())
 
   decoder.io.inst := pIdReg.inst
-
-  io.exOut := decoder.io.exOut
-  io.exOut.bcIn.pc := pIdReg.instAddr
 
   io.memOut.st_type := decoder.io.st_type
   io.memOut.ld_type := decoder.io.ld_type
   io.memOut.data := fwd2.io.out
 
-  io.wbOut.regfilewrite.waddr := decoder.io.rd
+  io.wbOut.regfilewrite.rd := decoder.io.rd
   io.mainRegOut := mainReg.io.regOut
 
-  mainReg.io.port.inRead := decoder.io.regRead
+  mainReg.io.readport.inRead := decoder.io.regRead
   mainReg.io.port.inWrite := io.wbIn.regWrite
 
-  fwd1.io.rs := decoder.io.regRead.rs1
+  fwd1.io.rs := decoder.io.rs1
   fwd1.io.data := mainReg.io.port.out.rs1Data
   fwd1.io.exWrite := io.exRegWriteIn
   fwd1.io.memWrite := io.memRegWriteIn
 
-  fwd2.io.rs := decoder.io.regRead.rs2
+  fwd2.io.rs := decoder.io.rs2
   fwd2.io.data := mainReg.io.port.out.rs2Data
   fwd2.io.exWrite := io.exRegWriteIn
   fwd2.io.memWrite := io.memRegWriteIn
 
+  io.exOut.bcIn.pc := pIdReg.instAddr
   when(decoder.io.pcImmSel){
     io.exOut.bcIn.pcImm := decoder.io.pcImm
     io.exOut.bcIn.pcAdd := true.B
@@ -87,9 +85,9 @@ class IdWbUnit(implicit val conf:Config) extends Module {
     io.exOut.bcIn.pcAdd := false.B
   }
 
-  alu.io.A := Mux(decoder.io.inASel === A_RS1, fwd1.io.out1, pIdReg.instAddr)
-  alu.io.B := Mux(decoder.io.inBSel === B_RS2, fwd2.io.out, immgen.io.out)
-  alu.io.alu_op := decoder.io.alu_op
+  io.exOut.alu_op := decoder.io.alu_op
+  io.exOut.aluIn.A := Mux(decoder.io.inASel === A_RS1, fwd1.io.out1, pIdReg.instAddr)
+  io.exOut.aluInB := Mux(decoder.io.inBSel === B_RS2, fwd2.io.out, immgen.io.out)
 
   io.stole := false.B
   when((decoder.io.regRead.rs1 === io.exRegWriteIn.rd) ||

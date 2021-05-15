@@ -3,10 +3,10 @@
 import chisel3._
 
 class RegFileRead(implicit val conf:Config) extends Bundle{
-  val raddr1 = Input(UInt(conf.regBit.W))
-  val raddr2 = Input(UInt(conf.regBit.W))
-  val rdata1 = Output(UInt(conf.dataWidth.W))
-  val rdata2 = Output(UInt(conf.dataWidth.W))
+  val rs1 = Input(UInt(conf.regBit.W))
+  val rs2 = Input(UInt(conf.regBit.W))
+  val rs1data = Output(UInt(conf.dataWidth.W))
+  val rs2data = Output(UInt(conf.dataWidth.W))
 }
 
 
@@ -26,11 +26,11 @@ class RegFileIO(implicit val conf:Config)  extends Bundle {
   val regOut = new RegisterFileOutPort
 }
 
-class RegFile(implicit val conf:Config) extends Module with CoreParams {
+class RegFile(implicit val conf:Config) extends Module {
   val io = IO(new RegFileIO)
   val regs = Mem(1<<conf.regBit, UInt(conf.dataWidth.W))
-  io.rdata1 := Mux(io.raddr1.orR, regs(io.raddr1), 0.U)
-  io.rdata2 := Mux(io.raddr2.orR, regs(io.raddr2), 0.U)
+  io.rs1data := Mux(io.rs1.orR, regs(io.rs1), 0.U)
+  io.rs2data := Mux(io.rs2.orR, regs(io.rs2), 0.U)
   when(io.wen & io.rd.orR) {
     regs(io.rd) := io.wdata
   }

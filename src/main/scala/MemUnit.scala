@@ -19,6 +19,8 @@ class MemUnitPort(implicit val conf:Config) extends Bundle {
   val enable = Input(Bool())
 }
 
+import Control._
+
 class MemUnit(implicit val conf:Config) extends Module {
   val io = IO(new MemUnitPort())
 

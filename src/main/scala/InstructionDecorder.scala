@@ -136,11 +136,10 @@ class ControlSignals(implicit val conf:Config) extends Bundle {
   val wb_en      = Output(Bool())
   val illegal    = Output(Bool())
 
-  val exout      = Output(new ExUnitIn)
-
-  val regRead    = Output(new MainRegInRead)
-
+  val rs1        = Output(UInt(conf.regBit.W))
+  val rs2        = Output(UInt(conf.regBit.W))
   val rd         = Output(UInt(conf.regBit.W))
+
   val finishFlag = Output(Bool())
 }
 
@@ -167,8 +166,8 @@ class InstructionDecoder(implicit val conf:Config) extends Module {
   io.illegal := ctrlSignals(11)
 
   //Register Address
-  io.regRead.rs1 := io.inst(19, 15)
-  io.regRead.rs2 := io.inst(24, 20)
+  io.rs1 := io.inst(19, 15)
+  io.rs2 := io.inst(24, 20)
   io.rd := io.inst(11, 7)
   //Detect end of program
   io.finishFlag := io.inst === Instructions.INFLOOP

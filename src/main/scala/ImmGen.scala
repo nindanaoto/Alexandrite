@@ -2,15 +2,16 @@
 
 import chisel3._
 import chisel3.util._
-import InstructionDecoder._
 
-class ImmGenIO(implicit val conf:Config) extends CoreBundle()(p) {
+class ImmGenIO(implicit val conf:Config) extends Bundle{
   val inst = Input(UInt(conf.instWidth.W))
   val sel  = Input(UInt(3.W))
   val out  = Output(UInt(conf.dataWidth.W))
 }
 
-class ImmGen(implicit val conf:Config) extends ImmGen()(p) {
+import Control._
+
+class ImmGen(implicit val conf:Config) extends Module {
   val io = IO(new ImmGenIO)
 
   val Iimm = io.inst(31, 20).asSInt

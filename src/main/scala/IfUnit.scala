@@ -11,7 +11,7 @@ class IfUnitIn(implicit val conf:Config) extends Bundle {
 
 class IfUnitOut(implicit val conf:Config) extends Bundle {
   val romAddr = UInt(conf.romAddrWidth.W)
-  val inst = UInt(conf.instDataWidth.W)
+  val inst = UInt(conf.instWidth.W)
   val instAddr = UInt(conf.instAddrWidth.W)
   val stole = Bool()
 

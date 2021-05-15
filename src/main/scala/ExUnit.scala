@@ -16,7 +16,7 @@ class ExUnitPort(implicit val conf:Config) extends Bundle {
 class ExUnitIn(implicit val conf:Config) extends Bundle {
   val aluIn = new ALUIn
 
-  val bcIn = new BrCondIO
+  val bcIO = new BrCondIO
 
   override def cloneType: this.type = new ExUnitIn()(conf).asInstanceOf[this.type]
 }
@@ -27,6 +27,10 @@ class ExUnitOut(implicit val conf:Config) extends Bundle {
 
   override def cloneType: this.type = new ExUnitOut()(conf).asInstanceOf[this.type]
 }
+
+import Control.ST_XXX
+import Control.LD_XXX
+import Control.BR_XXX
 
 class ExUnit(implicit val conf:Config) extends Module {
   val io = IO(new ExUnitPort)
@@ -42,10 +46,11 @@ class ExUnit(implicit val conf:Config) extends Module {
     pMemReg := io.memIn
     pWbReg := io.wbIn
     when(io.flush){
-      pMemReg.write := false.B
+      pMemReg.st_type := ST_XXX
+      pMemReg.ld_type := LD_XXX
       pWbReg.finishFlag := false.B
-      pWbReg.regWrite.writeEnable := false.B
-      pExReg.bcIn.pcOpcode := 0.U
+      pWbReg.regfilewrite.writeEnable := false.B
+      pExReg.bcIO.in.br_type := BR_XXX
     }
   }
 
@@ -55,18 +60,17 @@ class ExUnit(implicit val conf:Config) extends Module {
   io.memOut := pMemReg
 
   io.wbOut := pWbReg
-  io.wbOut.regWrite.writeData := io.out.res
+  io.wbOut.regfilewrite.writeData := io.out.res
 
   brcond.io.in := pBrReg
   io.out.jump := brcond.io.jump
 
   when(conf.debugEx.B) {
-    printf("[EX] opcode:0x%x\n", pExReg.aluIn.opcode)
-    printf("[EX] inA:0x%x\n", pExReg.aluIn.inA)
-    printf("[EX] inB:0x%x\n", pExReg.aluIn.inB)
+    printf("[EX] opcode:0x%x\n", pExReg.aluIn.alu_op)
+    printf("[EX] inA:0x%x\n", pExReg.aluIn.A)
+    printf("[EX] inB:0x%x\n", pExReg.aluIn.B)
     printf("[EX] Res:0x%x\n", io.out.res)
     printf("[EX] Jump:%d\n", io.out.jump)
-    printf("[EX] JumpAddress:0x%x\n", io.out.jumpAddress)
   }
 
   //when(io.out.jump){
