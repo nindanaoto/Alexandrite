@@ -12,7 +12,6 @@ class IdWbUnitPort(implicit val conf:Config) extends Bundle {
   val idIn = Input(new IfUnitOut)
   val wbIn = Input(new WbUnitIn)
   val exRegWriteIn = Input(new RegFileWrite)
-  val memRegWriteIn = Input(new RegFileWrite)
   val exMemIn = Input(new MemUnitIn)
 
   val exOut = Output(new ExUnitIn)
@@ -26,6 +25,10 @@ class IdWbUnitPort(implicit val conf:Config) extends Bundle {
   val idEnable = Input(Bool())
   val idFlush = Input(Bool())
 }
+
+import Control.A_RS1
+import Control.B_RS2
+import Control.ST_XXX
 
 class IdWbUnit(implicit val conf:Config) extends Module {
   val io = IO(new IdWbUnitPort)
@@ -45,8 +48,8 @@ class IdWbUnit(implicit val conf:Config) extends Module {
     pIdReg := pIdReg
   }
 
-  val pWbReg = RegInit(0.U.asTypeOf(new RegFileWrite))
-  pWbReg := io.wbIn.regfilewrite
+  val pWbReg = RegInit(0.U.asTypeOf(new WbUnitIn))
+  pWbReg := io.wbIn
 
   val decoder = Module(new InstructionDecoder())
   val immgen = Module(new ImmGen())
@@ -63,36 +66,29 @@ class IdWbUnit(implicit val conf:Config) extends Module {
   io.wbOut.regfilewrite.rd := decoder.io.rd
   io.mainRegOut := mainReg.io.regOut
 
-  mainReg.io.readport.inRead := decoder.io.regRead
-  mainReg.io.port.inWrite := io.wbIn.regWrite
+  mainReg.io.readport.rs1 := decoder.io.rs1
+  mainReg.io.readport.rs2 := decoder.io.rs2
+  mainReg.io.writeport := pWbReg.regfilewrite
 
   fwd1.io.rs := decoder.io.rs1
-  fwd1.io.data := mainReg.io.port.out.rs1Data
+  fwd1.io.data := mainReg.io.readport.rs1data
   fwd1.io.exWrite := io.exRegWriteIn
-  fwd1.io.memWrite := io.memRegWriteIn
+  fwd1.io.wbWrite := io.memRegWriteIn
 
   fwd2.io.rs := decoder.io.rs2
-  fwd2.io.data := mainReg.io.port.out.rs2Data
+  fwd2.io.data := mainReg.io.readport.rs2data
   fwd2.io.exWrite := io.exRegWriteIn
   fwd2.io.memWrite := io.memRegWriteIn
 
-  io.exOut.bcIn.pc := pIdReg.instAddr
-  when(decoder.io.pcImmSel){
-    io.exOut.bcIn.pcImm := decoder.io.pcImm
-    io.exOut.bcIn.pcAdd := true.B
-  }.otherwise{
-    io.exOut.bcIn.pcImm := fwd1.io.out
-    io.exOut.bcIn.pcAdd := false.B
-  }
+  io.exOut.aluIn.alu_op := decoder.io.alu_op
+  io.exOut.aluIn.A := Mux(decoder.io.A_sel === A_RS1, fwd1.io.out, pIdReg.instAddr)
+  io.exOut.aluIn.B := Mux(decoder.io.B_sel === B_RS2, fwd2.io.out, immgen.io.out)
 
-  io.exOut.alu_op := decoder.io.alu_op
-  io.exOut.aluIn.A := Mux(decoder.io.inASel === A_RS1, fwd1.io.out1, pIdReg.instAddr)
-  io.exOut.aluInB := Mux(decoder.io.inBSel === B_RS2, fwd2.io.out, immgen.io.out)
 
   io.stole := false.B
-  when((decoder.io.regRead.rs1 === io.exRegWriteIn.rd) ||
-       (decoder.io.regRead.rs2 === io.exRegWriteIn.rd)){
-    io.stole := io.exMemIn.read
+  when((decoder.io.rs1 === io.exRegWriteIn.rd) ||
+       (decoder.io.rs2 === io.exRegWriteIn.rd)){
+    io.stole := io.exMemIn.st_type != ST_XXX
   }
 
   when(io.stole){

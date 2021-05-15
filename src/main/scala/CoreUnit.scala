@@ -33,7 +33,6 @@ class CoreUnit(implicit val conf:Config) extends Module {
   idwbUnit.io.idIn := ifUnit.io.out
   idwbUnit.io.wbIn := memUnit.io.out
   idwbUnit.io.exRegWriteIn := exUnit.io.wbOut.regfilewrite
-  idwbUnit.io.memRegWriteIn := memUnit.io.out.regfilewrite
   idwbUnit.io.exMemIn := exUnit.io.memOut
   idwbUnit.io.idFlush := exUnit.io.out.jump
   idwbUnit.io.idEnable := true.B&&(!io.load)

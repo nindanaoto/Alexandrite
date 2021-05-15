@@ -1,5 +1,5 @@
 import chisel3._
-import chisel3.util.Cat
+import chisel3.util.MuxLookup
 
 class MemUnitIn(implicit val conf:Config) extends Bundle {
   val data = UInt(conf.dataWidth.W)
@@ -40,5 +40,5 @@ class MemUnit(implicit val conf:Config) extends Module {
 
   io.out := pWbReg
   val shifted = io.ramPort.readData >> pExInReg.res(1,0)
-  io.out.regfilewrite.writeData := MuxLookup(ld_type, io.ramPort.readData, Seq(LD_LH  -> shifted(15, 0).asSInt, LD_LB  -> shifted(7, 0).asSInt, LD_LHU -> shifted(15, 0).zext, LD_LBU -> shifted(7, 0).zext) )
+  io.out.regfilewrite.writeData := MuxLookup(pMemReg.ld_type, pWbReg.regfilewrite.writeData, Seq(LD_LW -> io.ramPort.readData, LD_LH  -> shifted(15, 0).asSInt, LD_LB  -> shifted(7, 0).asSInt, LD_LHU -> shifted(15, 0).zext, LD_LBU -> shifted(7, 0).zext) )
 }
