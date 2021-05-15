@@ -4,7 +4,7 @@ class CoreUnitPort(implicit val conf:Config) extends Bundle {
   val romPort = new RomPort()
   val ramPort = new RamPort()
 
-  val mainRegOut = Output(new MainRegisterOutPort)
+  val mainRegOut = Output(new RegisterFileOutPort)
   val finishFlag = Output(Bool())
   val load = Input(Bool())
 }
@@ -27,13 +27,13 @@ class CoreUnit(implicit val conf:Config) extends Module {
   io.ramPort.writeEnable := memUnit.io.ramPort.writeEnable
 
   ifUnit.io.in.jump := exUnit.io.out.jump
-  ifUnit.io.in.jumpAddress := exUnit.io.out.jumpAddress
+  ifUnit.io.in.jumpAddress := exUnit.io.out.res
   ifUnit.io.enable := !idwbUnit.io.stole&&(!io.load)
 
   idwbUnit.io.idIn := ifUnit.io.out
   idwbUnit.io.wbIn := memUnit.io.out
-  idwbUnit.io.exRegWriteIn := exUnit.io.wbOut.regWrite
-  idwbUnit.io.memRegWriteIn := memUnit.io.out.regWrite
+  idwbUnit.io.exRegWriteIn := exUnit.io.wbOut.regfilewrite
+  idwbUnit.io.memRegWriteIn := memUnit.io.out.regfilewrite
   idwbUnit.io.exMemIn := exUnit.io.memOut
   idwbUnit.io.idFlush := exUnit.io.out.jump
   idwbUnit.io.idEnable := true.B&&(!io.load)

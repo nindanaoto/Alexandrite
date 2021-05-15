@@ -31,7 +31,7 @@ class ExUnitOut(implicit val conf:Config) extends Bundle {
 class ExUnit(implicit val conf:Config) extends Module {
   val io = IO(new ExUnitPort)
   val alu = Module(new ALU)
-  val brcond = Module(new brcond)
+  val brcond = Module(new BrCond)
   val pExReg = RegInit(0.U.asTypeOf(new ExUnitIn))
   val pBrReg = RegInit(0.U.asTypeOf(new BrCondIn))
   val pMemReg = RegInit(0.U.asTypeOf(new MemUnitIn))

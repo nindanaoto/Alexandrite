@@ -45,8 +45,8 @@ class IdWbUnit(implicit val conf:Config) extends Module {
     pIdReg := pIdReg
   }
 
-  val pWbReg = RegInit(0.U.asTypeOf(WbUnitIn))
-  pWbReg := 
+  val pWbReg = RegInit(0.U.asTypeOf(RegFileWrite))
+  pWbReg := io.wbIn.regfilewrite
 
   val decoder = Module(new InstructionDecoder())
   val immgen = Module(new ImmGen())

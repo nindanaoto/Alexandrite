@@ -1,7 +1,5 @@
 // riscv-mini
 
-package mini
-
 import chisel3._
 import chisel3.util._
 
@@ -26,13 +24,13 @@ class ALUIn(implicit conf: Config) extends Bundle {
   val B = Input(UInt(conf.dataWidth.W))
   val alu_op = Input(UInt(4.W))
 
-  override def cloneType: this.type = new ALUin()(conf).asInstanceOf[this.type]
+  override def cloneType: this.type = new ALUIn()(conf).asInstanceOf[this.type]
 }
 
 class ALUOut(implicit conf: Config) extends Bundle {
   val out = Output(UInt(conf.dataWidth.W))
 
-  override def cloneType: this.type = new ALUout()(conf).asInstanceOf[this.type]
+  override def cloneType: this.type = new ALUOut()(conf).asInstanceOf[this.type]
 }
 
 class ALUIo(implicit conf: Config) extends Bundle {
@@ -40,7 +38,7 @@ class ALUIo(implicit conf: Config) extends Bundle {
   val out = new ALUOut
 }
 
-import ALU.ALUOpcode
+import ALUOpcode._
 
 class ALU(implicit conf: Config) extends Module {
   val io = IO(new ALUIo)
@@ -60,7 +58,7 @@ class ALU(implicit conf: Config) extends Module {
     Mux(io.in.alu_op === ALU_AND, (io.in.A & io.in.B),
     Mux(io.in.alu_op === ALU_OR,  (io.in.A | io.in.B),
     Mux(io.in.alu_op === ALU_XOR, (io.in.A ^ io.in.B), 
-    Mux(io.in.alu_op === ALU_COPY_A, io.in.A, io.in.B)))))))))
+    Mux(io.in.alu_op === ALU_COPY_A, io.in.A, io.in.B))))))))
 
   io.out.out := out
 }

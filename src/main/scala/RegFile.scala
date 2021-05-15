@@ -1,14 +1,12 @@
 // riscv-mini
 
-package mini
-
 import chisel3._
 
 class RegFileRead(implicit val conf:Config) extends Bundle{
   val raddr1 = Input(UInt(conf.regBit.W))
   val raddr2 = Input(UInt(conf.regBit.W))
   val rdata1 = Output(UInt(conf.dataWidth.W))
-  val rdata2 = Output(UInt(conf.dataWidth.W)))
+  val rdata2 = Output(UInt(conf.dataWidth.W))
 }
 
 

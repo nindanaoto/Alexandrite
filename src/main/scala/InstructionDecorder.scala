@@ -1,7 +1,5 @@
 // riscv-mini
 
-package mini
-
 import chisel3._
 import chisel3.util.ListLookup
 
@@ -63,7 +61,7 @@ object Control {
   val WB_CSR = 3.U(2.W)
 
   import Instructions._
-  import ALU._
+  import ALUOpcode._
 
   val default =
     //                                                            kill                        wb_en illegal?
