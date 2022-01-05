@@ -9,13 +9,15 @@ class ExUnitPort(implicit val conf:Config) extends Bundle {
   val flush = Input(Bool())
 
   val out = new ExUnitOut
+  val memOut = Output(new MemUnitIn)
+  val wbOut = Output(new WbUnitIn)
 
 }
 
 class ExUnitIn(implicit val conf:Config) extends Bundle {
   val aluIn = new ALUIn
 
-  val bcIO = new BrCondIO
+  val bcIn = new BrCondIn
 
   override def cloneType: this.type = new ExUnitIn()(conf).asInstanceOf[this.type]
 }
@@ -24,8 +26,6 @@ class ExUnitOut(implicit val conf:Config) extends Bundle {
   val res = Output(UInt(conf.dataWidth.W))
   val jump = Output(Bool())
 
-  val memOut = Output(new MemUnitIn)
-  val wbOut = Output(new WbUnitIn)
 
   override def cloneType: this.type = new ExUnitOut()(conf).asInstanceOf[this.type]
 }
@@ -50,9 +50,8 @@ class ExUnit(implicit val conf:Config) extends Module {
     when(io.flush){
       pMemReg.st_type := ST_XXX
       pMemReg.ld_type := LD_XXX
-      pWbReg.finishFlag := false.B
       pWbReg.regfilewrite.writeEnable := false.B
-      pExReg.bcIO.in.br_type := BR_XXX
+      pExReg.bcIn.br_type := BR_XXX
     }
   }
 
@@ -60,6 +59,7 @@ class ExUnit(implicit val conf:Config) extends Module {
   io.out.res := alu.io.out.out
 
   io.memOut := pMemReg
+  io.memOut.exres := alu.io.out.sum
 
   io.wbOut := pWbReg
   io.wbOut.regfilewrite.writeData := io.out.res

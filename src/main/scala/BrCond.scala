@@ -4,13 +4,13 @@ import chisel3._
 import Control._
 
 class BrCondIn(implicit val conf:Config) extends Bundle {
-  val rs1 = Input(UInt(conf.dataWidth.W))
-  val rs2 = Input(UInt(conf.dataWidth.W))
-  val br_type = Input(UInt(3.W))
+  val rs1 = UInt(conf.dataWidth.W)
+  val rs2 = UInt(conf.dataWidth.W)
+  val br_type = UInt(3.W)
 }
 
 class BrCondIO(implicit val conf:Config) extends Bundle {
-  val in = new BrCondIn
+  val in = Input(new BrCondIn)
   val jump = Output(Bool())
 }
 

@@ -11,9 +11,9 @@ class RegFileRead(implicit val conf:Config) extends Bundle{
 
 
 class RegFileWrite(implicit val conf:Config) extends Bundle{
-  val writeEnable = Input(Bool())
-  val rd          = Input(UInt(conf.regBit.W))
-  val writeData   = Input(UInt(conf.dataWidth.W))
+  val writeEnable = Bool()
+  val rd          = UInt(conf.regBit.W)
+  val writeData   = UInt(conf.dataWidth.W)
 }
 
 class RegisterFileOutPort(implicit val conf:Config) extends Bundle{
@@ -22,7 +22,7 @@ class RegisterFileOutPort(implicit val conf:Config) extends Bundle{
 
 class RegFileIO(implicit val conf:Config)  extends Bundle {
   val readport = new RegFileRead
-  val writeport = new RegFileWrite
+  val writeport = Input(new RegFileWrite)
   val regOut = new RegisterFileOutPort
 }
 

@@ -20,22 +20,23 @@ object ALUOpcode {
 }
 
 class ALUIn(implicit conf: Config) extends Bundle {
-  val A = Input(UInt(conf.dataWidth.W))
-  val B = Input(UInt(conf.dataWidth.W))
-  val alu_op = Input(UInt(4.W))
+  val A = UInt(conf.dataWidth.W)
+  val B = UInt(conf.dataWidth.W)
+  val alu_op = UInt(4.W)
 
   override def cloneType: this.type = new ALUIn()(conf).asInstanceOf[this.type]
 }
 
 class ALUOut(implicit conf: Config) extends Bundle {
-  val out = Output(UInt(conf.dataWidth.W))
+  val out = UInt(conf.dataWidth.W)
+  val sum = UInt(conf.dataWidth.W)
 
   override def cloneType: this.type = new ALUOut()(conf).asInstanceOf[this.type]
 }
 
 class ALUIo(implicit conf: Config) extends Bundle {
-  val in = new ALUIn
-  val out = new ALUOut
+  val in = Input(new ALUIn)
+  val out = Output(new ALUOut)
 }
 
 import ALUOpcode._
@@ -61,4 +62,5 @@ class ALU(implicit conf: Config) extends Module {
     Mux(io.in.alu_op === ALU_COPY_A, io.in.A, io.in.B))))))))
 
   io.out.out := out
+  io.out.sum := sum
 }
