@@ -11,7 +11,8 @@ case class Config() {
     var testRam:Seq[BigInt] = Seq(BigInt(0))
 
     val instWidth = 32
-    val dataWidth = 32
+    val datainbyte = 4
+    val dataWidth = datainbyte*8
     val regBit = 5
 
     //IF Unit

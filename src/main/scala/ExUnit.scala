@@ -9,8 +9,7 @@ class ExUnitPort(implicit val conf:Config) extends Bundle {
   val flush = Input(Bool())
 
   val out = new ExUnitOut
-  val memOut = Output(new MemUnitIn)
-  val wbOut = Output(new WbUnitIn)
+
 }
 
 class ExUnitIn(implicit val conf:Config) extends Bundle {
@@ -24,6 +23,9 @@ class ExUnitIn(implicit val conf:Config) extends Bundle {
 class ExUnitOut(implicit val conf:Config) extends Bundle {
   val res = Output(UInt(conf.dataWidth.W))
   val jump = Output(Bool())
+
+  val memOut = Output(new MemUnitIn)
+  val wbOut = Output(new WbUnitIn)
 
   override def cloneType: this.type = new ExUnitOut()(conf).asInstanceOf[this.type]
 }

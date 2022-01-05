@@ -3,9 +3,14 @@ import chisel3.util.Cat
 
 class WbUnitIn(implicit val conf:Config) extends Bundle {
   val regfilewrite = new RegFileWrite
-  val finishFlag = Bool()
 
   override def cloneType: this.type = new WbUnitIn()(conf).asInstanceOf[this.type]
+}
+
+class IdUnitOut(implicit val conf:Config) extends Bundle {
+  val exOut = Output(new ExUnitIn)
+  val memOut = Output(new MemUnitIn)
+  val wbOut = Output(new WbUnitIn)
 }
 
 class IdWbUnitPort(implicit val conf:Config) extends Bundle {
@@ -14,9 +19,7 @@ class IdWbUnitPort(implicit val conf:Config) extends Bundle {
   val exRegWriteIn = Input(new RegFileWrite)
   val exMemIn = Input(new MemUnitIn)
 
-  val exOut = Output(new ExUnitIn)
-  val memOut = Output(new MemUnitIn)
-  val wbOut = Output(new WbUnitIn)
+  val out = Output(new IdUnitOut)
 
   val mainRegOut = Output(new RegisterFileOutPort)
 
@@ -59,11 +62,11 @@ class IdWbUnit(implicit val conf:Config) extends Module {
 
   decoder.io.inst := pIdReg.inst
 
-  io.memOut.st_type := decoder.io.st_type
-  io.memOut.ld_type := decoder.io.ld_type
-  io.memOut.data := fwd2.io.out
+  io.out.memOut.st_type := decoder.io.st_type
+  io.out.memOut.ld_type := decoder.io.ld_type
+  io.out.memOut.data := fwd2.io.out
 
-  io.wbOut.regfilewrite.rd := decoder.io.rd
+  io.out.wbOut.regfilewrite.rd := decoder.io.rd
   io.mainRegOut := mainReg.io.regOut
 
   mainReg.io.readport.rs1 := decoder.io.rs1
@@ -73,12 +76,12 @@ class IdWbUnit(implicit val conf:Config) extends Module {
   fwd1.io.rs := decoder.io.rs1
   fwd1.io.data := mainReg.io.readport.rs1data
   fwd1.io.exWrite := io.exRegWriteIn
-  fwd1.io.wbWrite := io.memRegWriteIn
+  fwd1.io.wbWrite := io.wbIn.regfilewrite
 
   fwd2.io.rs := decoder.io.rs2
   fwd2.io.data := mainReg.io.readport.rs2data
   fwd2.io.exWrite := io.exRegWriteIn
-  fwd2.io.memWrite := io.memRegWriteIn
+  fwd2.io.memWrite := io.exMemIn
 
   io.exOut.aluIn.alu_op := decoder.io.alu_op
   io.exOut.aluIn.A := Mux(decoder.io.A_sel === A_RS1, fwd1.io.out, pIdReg.instAddr)
@@ -97,7 +100,6 @@ class IdWbUnit(implicit val conf:Config) extends Module {
     io.wbOut.regWrite.writeEnable := false.B
     io.wbOut.inst := 0.U
     io.wbOut.instAddr := 0.U
-    io.wbOut.finishFlag := false.B
     io.exOut.bcIn.pcOpcode := 0.U
   }
 

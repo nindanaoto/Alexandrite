@@ -27,6 +27,7 @@ class IfUnitPort(implicit val conf:Config) extends Bundle {
 
 class IfUnit(implicit val conf: Config) extends Module {
   val io = IO(new IfUnitPort)
+  val romPort = IO(new RomPort)
 
   val pc = RegInit(0.U(conf.instAddrWidth.W))
 
@@ -49,9 +50,8 @@ class IfUnit(implicit val conf: Config) extends Module {
     }
 
     stole := false.B
-    io.out.romAddr := pc(conf.instAddrWidth-1, 2)
-    io.out.romAddr := pc(conf.instAddrWidth-1, 2) + 1.U
-    inst := io.in.romData
+    romPort.addr := pc(conf.instAddrWidth-1, 2)
+    inst := romPort.romData
     stole := false.B
   }.otherwise{
       pc := pc

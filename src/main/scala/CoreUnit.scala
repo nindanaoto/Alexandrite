@@ -2,10 +2,10 @@ import chisel3._
 
 class CoreUnitPort(implicit val conf:Config) extends Bundle {
   val romPort = new RomPort()
-  val ramPort = new RamPort()
+  val RramPort = new ReadRamPort()
+  val WramPort = new WriteRamPort()
 
   val mainRegOut = Output(new RegisterFileOutPort)
-  val finishFlag = Output(Bool())
   val load = Input(Bool())
 }
 
@@ -15,24 +15,26 @@ class CoreUnit(implicit val conf:Config) extends Module {
   val ifUnit = Module(new IfUnit)
   val idwbUnit = Module(new IdWbUnit)
   val exUnit = Module(new ExUnit)
-  val memUnit = Module(new MemUnit)
+  val WmemUnit = Module(new WMemUnit)
+  val RmemUnit = Module(new RMemUnit)
 
-  io.finishFlag := memUnit.io.out.finishFlag
-  io.romPort.addr := ifUnit.io.out.romAddr
-  io.mainRegOut := idwbUnit.io.mainRegOut
-  ifUnit.io.in.romData := io.romPort.data
+  val pIfIdReg = RegInit(0.U.asTypeOf(new IfUnitOut))
+  val pIdExReg = RegInit(0.U.asTypeOf(new IdUnitOut))
+  val pExRMemReg = RegInit(0.U.asTypeOf(new ExUnitOut))
+  val pRMemWbReg = RegInit(0.U.asTypeOf(new RMemUnitOut))
 
-  io.ramPort.addr := memUnit.io.ramPort.addr
-  io.ramPort.writeData := memUnit.io.ramPort.writeData
-  io.ramPort.writeEnable := memUnit.io.ramPort.writeEnable
+  io.romPort := ifUnit.romPort
+
+  io.WramPort := WmemUnit.writeramPort
+  io.RramPort := RmemUnit.readramPort
 
   ifUnit.io.in.jump := exUnit.io.out.jump
   ifUnit.io.in.jumpAddress := exUnit.io.out.res
   ifUnit.io.enable := !idwbUnit.io.stole&&(!io.load)
 
   idwbUnit.io.idIn := ifUnit.io.out
-  idwbUnit.io.wbIn := memUnit.io.out
-  idwbUnit.io.exRegWriteIn := exUnit.io.wbOut.regfilewrite
+  idwbUnit.io.wbIn := RmemUnit.io.wbout
+  idwbUnit.io.exRegWriteIn := exUnit.io.out.wbOut.regfilewrite
   idwbUnit.io.exMemIn := exUnit.io.memOut
   idwbUnit.io.idFlush := exUnit.io.out.jump
   idwbUnit.io.idEnable := true.B&&(!io.load)
@@ -43,9 +45,9 @@ class CoreUnit(implicit val conf:Config) extends Module {
   exUnit.io.flush := exUnit.io.out.jump
   exUnit.io.enable := true.B&&(!io.load)
 
-  memUnit.io.addr := exUnit.io.out
-  memUnit.io.in := exUnit.io.memOut
-  memUnit.io.wbIn := exUnit.io.wbOut
-  memUnit.io.enable := true.B&&(!io.load)
-  memUnit.io.ramPort.readData := io.ramPort.readData
+  RmemUnit.io.addr := exUnit.io.out
+  RmemUnit.io.in := exUnit.io.memOut
+  RmemUnit.io.wbIn := exUnit.io.wbOut
+  RmemUnit.io.enable := true.B&&(!io.load)
+  RmemUnit.io.ramPort.readData := io.ramPort.readData
 }
