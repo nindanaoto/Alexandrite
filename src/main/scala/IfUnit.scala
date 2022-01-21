@@ -32,6 +32,9 @@ class IfUnit(implicit val conf: Config) extends Module {
   io.ifPort.out.instAddr := pc
   io.ifPort.out.inst := 0.U
 
+  io.romPort.addr := pc(conf.instAddrWidth-1, 2)
+  io.ifPort.out.inst := io.romPort.data
+
   when(!io.ifPort.stall){
     // ProgramCounter
     when(io.ifPort.in.jump) {
@@ -39,9 +42,6 @@ class IfUnit(implicit val conf: Config) extends Module {
     }.otherwise {
       pc := pc + (conf.instWidth/8).U
     }
-
-    io.romPort.addr := pc(conf.instAddrWidth-1, 2)
-    io.ifPort.out.inst := io.romPort.data
   }
 
   when(conf.debugIf.B){
