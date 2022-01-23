@@ -46,9 +46,6 @@ class IdWbUnit(implicit val conf:Config) extends Module {
     }
   }
 
-  val pWbReg = RegInit(0.U.asTypeOf(new WbUnitIn))
-  pWbReg := io.wbIn
-
   val decoder = Module(new InstructionDecoder())
   val immgen = Module(new ImmGen())
   val fwd1 = Module(new ForwardController())
@@ -73,7 +70,7 @@ class IdWbUnit(implicit val conf:Config) extends Module {
 
   mainReg.io.readport.rs1 := decoder.io.rs1
   mainReg.io.readport.rs2 := decoder.io.rs2
-  mainReg.io.writeport := pWbReg.regfilewrite
+  mainReg.io.writeport := io.wbIn.regfilewrite
 
   fwd1.io.rs := decoder.io.rs1
   fwd1.io.data := mainReg.io.readport.rs1data
@@ -88,8 +85,8 @@ class IdWbUnit(implicit val conf:Config) extends Module {
   io.exOut.aluIn.alu_op := decoder.io.alu_op
   io.exOut.aluIn.A := Mux(decoder.io.A_sel === A_RS1, fwd1.io.out, pIdReg.instAddr)
   io.exOut.aluIn.B := Mux(decoder.io.B_sel === B_RS2, fwd2.io.out, immgen.io.out)
-  io.exOut.bcIn.rs1 := decoder.io.rs1
-  io.exOut.bcIn.rs2 := decoder.io.rs2
+  io.exOut.bcIn.rs1 := fwd1.io.out
+  io.exOut.bcIn.rs2 := fwd2.io.out
   io.exOut.bcIn.br_type := decoder.io.br_type
 
   io.stall := false.B

@@ -39,7 +39,6 @@ class ExUnit(implicit val conf:Config) extends Module {
   val alu = Module(new ALU)
   val brcond = Module(new BrCond)
   val pExReg = RegInit(0.U.asTypeOf(new ExUnitIn))
-  val pBrReg = RegInit(0.U.asTypeOf(new BrCondIn))
   val pMemReg = RegInit(0.U.asTypeOf(new MemUnitIn))
   val pWbReg = RegInit(0.U.asTypeOf(new WbUnitIn))
 
@@ -64,8 +63,8 @@ class ExUnit(implicit val conf:Config) extends Module {
   io.wbOut := pWbReg
   io.wbOut.regfilewrite.writeData := io.out.res
 
-  brcond.io.in := pBrReg
   io.out.jump := brcond.io.jump
+  brcond.io.in := pExReg.bcIn
 
   when(conf.debugEx.B) {
     printf("[EX] opcode:0x%x\n", pExReg.aluIn.alu_op)

@@ -1,0 +1,23 @@
+# read design 
+read_verilog CoreUnit.v
+
+# elaborate design hierarchy
+hierarchy -check -top CoreUnit
+
+# the high-level stuff
+proc; opt; fsm; opt; memory; opt
+
+# mapping to internal cell library
+techmap; opt
+
+# mapping logic to gates.
+abc -g gates,MUX,AOI3,OAI3
+
+# cleanup
+clean -purge
+
+# write synthesized design
+write_json circuit.json
+
+# Print statistics
+stat
