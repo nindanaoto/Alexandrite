@@ -16,12 +16,12 @@ case class Config() {
     val regBit = 5
 
     //IF Unit
-    val romAddrWidth = 7
+    val romAddrWidth = 12-3
     val romDataWidth = dataWidth
 
     val instAddrWidth = romAddrWidth+2
 
-    var ramAddrWidth = 8
+    var ramAddrWidth = 10
     val ramDataWidth = dataWidth
 
     val dataAddrWidth = ramAddrWidth+1
