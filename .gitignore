@@ -3,3 +3,4 @@ target
 *.v
 *.fir
 *.json
+*.out

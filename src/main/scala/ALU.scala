@@ -23,15 +23,11 @@ class ALUIn(implicit conf: Config) extends Bundle {
   val A = UInt(conf.dataWidth.W)
   val B = UInt(conf.dataWidth.W)
   val alu_op = UInt(4.W)
-
-  override def cloneType: this.type = new ALUIn()(conf).asInstanceOf[this.type]
 }
 
 class ALUOut(implicit conf: Config) extends Bundle {
   val out = UInt(conf.dataWidth.W)
   val sum = UInt(conf.dataWidth.W)
-
-  override def cloneType: this.type = new ALUOut()(conf).asInstanceOf[this.type]
 }
 
 class ALUIo(implicit conf: Config) extends Bundle {

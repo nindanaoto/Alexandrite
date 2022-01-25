@@ -8,10 +8,12 @@ hierarchy -check -top CoreUnit
 proc; opt; fsm; opt; memory; opt
 
 # mapping to internal cell library
-techmap; opt
+techmap; opt; 
+
+dfflegalize -cell $_DFF_P_ 01
 
 # mapping logic to gates.
-abc -g gates,MUX,AOI3,OAI3
+abc -g gates,MUX
 
 # cleanup
 clean -purge

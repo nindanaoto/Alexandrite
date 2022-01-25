@@ -5,7 +5,6 @@ class CoreUnitPort(implicit val conf:Config) extends Bundle {
   val ramPort = Flipped(new RamPort())
 
   val mainRegOut = Output(new RegisterFileOutPort)
-  val load = Input(Bool())
 }
 
 class CoreUnit(implicit val conf:Config) extends Module {
@@ -21,20 +20,21 @@ class CoreUnit(implicit val conf:Config) extends Module {
 
   ifUnit.io.ifPort.in.jump := exUnit.io.out.jump
   ifUnit.io.ifPort.in.jumpAddress := exUnit.io.out.res
-  ifUnit.io.ifPort.stall := idwbUnit.io.stall||io.load
+  ifUnit.io.ifPort.stall := idwbUnit.io.stall
 
   idwbUnit.io.idIn := ifUnit.io.ifPort.out
   idwbUnit.io.wbIn := memUnit.io.memPort.wbout
   idwbUnit.io.exRegWriteIn := exUnit.io.wbOut.regfilewrite
   idwbUnit.io.idFlush := exUnit.io.out.jump
-  idwbUnit.io.idEnable := true.B&&(!io.load)
+  idwbUnit.io.idEnable := true.B
   io.mainRegOut := idwbUnit.io.mainRegOut
 
   exUnit.io.in := idwbUnit.io.exOut
   exUnit.io.memIn := idwbUnit.io.memOut
   exUnit.io.wbIn := idwbUnit.io.wbOut
   exUnit.io.flush := exUnit.io.out.jump
-  exUnit.io.enable := true.B&&(!io.load)
+  exUnit.io.enable := true.B
+  exUnit.io.PC4 := ifUnit.io.ifPort.out.instAddr
 
   memUnit.io.memPort.in := exUnit.io.memOut
   memUnit.io.memPort.wbIn := exUnit.io.wbOut

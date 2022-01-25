@@ -2,17 +2,19 @@ name := "Alexandrite"
 
 version := "1"
 
-scalaVersion := "2.12.13"
+scalaVersion := "2.13.7"
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.sonatypeRepo("releases")
 )
 
-libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.4.3"
+addCompilerPlugin("edu.berkeley.cs" % "chisel3-plugin" % "3.5.0" cross CrossVersion.full)
+
+libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.5.0"
 
 scalacOptions ++= Seq(
-      "-Xsource:2.11",
+      "-Xsource:2.13",
       "-language:reflectiveCalls",
       "-deprecation",
       "-feature",

@@ -3,8 +3,6 @@ import chisel3.util.Cat
 
 class WbUnitIn(implicit val conf:Config) extends Bundle {
   val regfilewrite = new RegFileWrite
-
-  override def cloneType: this.type = new WbUnitIn()(conf).asInstanceOf[this.type]
 }
 
 class IdWbUnitPort(implicit val conf:Config) extends Bundle {
@@ -88,11 +86,12 @@ class IdWbUnit(implicit val conf:Config) extends Module {
   io.exOut.bcIn.rs1 := fwd1.io.out
   io.exOut.bcIn.rs2 := fwd2.io.out
   io.exOut.bcIn.br_type := decoder.io.br_type
+  io.exOut.wb_sel := decoder.io.wb_sel
 
   io.stall := false.B
-  when((decoder.io.rs1 === io.exRegWriteIn.rd) ||
-       (decoder.io.rs2 === io.exRegWriteIn.rd)){
-    io.stall := RegNext(decoder.io.ld_type =/= LD_XXX)
+  when(((decoder.io.A_sel === A_RS1)&&(decoder.io.rs1 === io.exRegWriteIn.rd)) ||
+       ((decoder.io.B_sel === B_RS2)&&(decoder.io.rs2 === io.exRegWriteIn.rd))){
+    io.stall := RegNext((decoder.io.ld_type =/= LD_XXX)&&(~io.stall))
   }
 
   when(io.stall){

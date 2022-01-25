@@ -8,6 +8,8 @@ class ExUnitPort(implicit val conf:Config) extends Bundle {
   val enable = Input(Bool())
   val flush = Input(Bool())
 
+  val PC4 = Input(UInt(conf.instAddrWidth.W))
+
   val out = new ExUnitOut
   val memOut = Output(new MemUnitIn)
   val wbOut = Output(new WbUnitIn)
@@ -19,20 +21,19 @@ class ExUnitIn(implicit val conf:Config) extends Bundle {
 
   val bcIn = new BrCondIn
 
-  override def cloneType: this.type = new ExUnitIn()(conf).asInstanceOf[this.type]
+  val wb_sel = UInt(2.W)
 }
 
 class ExUnitOut(implicit val conf:Config) extends Bundle {
   val res = Output(UInt(conf.dataWidth.W))
   val jump = Output(Bool())
-
-
-  override def cloneType: this.type = new ExUnitOut()(conf).asInstanceOf[this.type]
 }
 
 import Control.ST_XXX
 import Control.LD_XXX
 import Control.BR_XXX
+import Control.WB_PC4
+import Control.WB_ALU
 
 class ExUnit(implicit val conf:Config) extends Module {
   val io = IO(new ExUnitPort)
@@ -51,6 +52,7 @@ class ExUnit(implicit val conf:Config) extends Module {
       pMemReg.ld_type := LD_XXX
       pWbReg.regfilewrite.writeEnable := false.B
       pExReg.bcIn.br_type := BR_XXX
+      pExReg.wb_sel := WB_ALU
     }
   }
 
@@ -61,9 +63,9 @@ class ExUnit(implicit val conf:Config) extends Module {
   io.memOut.exres := alu.io.out.sum
 
   io.wbOut := pWbReg
-  io.wbOut.regfilewrite.writeData := io.out.res
+  io.wbOut.regfilewrite.writeData := Mux(pExReg.wb_sel===WB_PC4,io.PC4,io.out.res)
 
-  io.out.jump := brcond.io.jump
+  io.out.jump := brcond.io.jump || (pExReg.wb_sel===WB_PC4)
   brcond.io.in := pExReg.bcIn
 
   when(conf.debugEx.B) {

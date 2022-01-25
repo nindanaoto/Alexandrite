@@ -4,15 +4,11 @@ import chisel3.util.Cat
 class IfUnitIn(implicit val conf:Config) extends Bundle {
   val jumpAddress = Input(UInt(conf.instAddrWidth.W))
   val jump = Input(Bool())
-
-  override def cloneType: this.type = new IfUnitIn()(conf).asInstanceOf[this.type]
 }
 
 class IfUnitOut(implicit val conf:Config) extends Bundle {
   val inst = Output(UInt(conf.instWidth.W))
   val instAddr = Output(UInt(conf.instAddrWidth.W))
-
-  override def cloneType: this.type = new IfUnitOut()(conf).asInstanceOf[this.type]
 }
 
 class IfUnitPort(implicit val conf:Config) extends Bundle {

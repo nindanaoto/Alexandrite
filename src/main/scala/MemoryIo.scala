@@ -5,14 +5,10 @@ class RamPort(implicit val conf:Config) extends Bundle {
   val readData = Output(UInt(conf.ramDataWidth.W))
   val writeData = Input(UInt(conf.ramDataWidth.W))
   val writeEnable = Input(UInt((conf.ramDataWidth/8).W))
-
-  override def cloneType: this.type = new RamPort()(conf).asInstanceOf[this.type]
 }
 
 class RomPort(implicit val conf:Config) extends Bundle {
   val data = Output(UInt(conf.romDataWidth.W))
 
   val addr = Input(UInt(conf.romAddrWidth.W))
-
-  override def cloneType: this.type = new RomPort()(conf).asInstanceOf[this.type]
 }
